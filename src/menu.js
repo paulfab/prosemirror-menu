@@ -272,6 +272,78 @@ export class DropdownSubmenu {
   }
 }
 
+
+
+export class BorderTable {
+  constructor(content, options) {
+    this.options = options || {}
+    this.content = Array.isArray(content) ? content : [content]
+  }
+
+  render(view) {
+
+    let content = renderBorderTableItems(this.content, view)
+
+    let label = crel("div", {class: prefix + "-dropdown " + (this.options.class || ""),
+                             style: this.options.css},
+                     translate(view, this.options.label))
+    if (this.options.title) label.setAttribute("title", translate(view, this.options.title))
+    let wrap = crel("div", {class: prefix + "-dropdown-wrap"}, label)
+    let open = null, listeningOnClose = null
+    let close = () => {
+      if (open && open.close()) {
+        open = null
+        window.removeEventListener("mousedown", listeningOnClose)
+      }
+    }
+    label.addEventListener("mousedown", e => {
+      e.preventDefault()
+      markMenuEvent(e)
+      if (open) {
+        close()
+      } else {
+        open = this.expand(wrap, content.dom)
+        window.addEventListener("mousedown", listeningOnClose = () => {
+          if (!isMenuEvent(wrap)) close()
+        })
+      }
+    })
+
+    function update(state) {
+      let inner = content.update(state)
+      wrap.style.display = inner ? "" : "none"
+      return inner
+    }
+
+    return {dom: wrap, update}
+  }
+
+  expand(dom, items) {
+    let menuDOM = crel("div", {class: prefix + "-dropdown-menu " + (this.options.class || "")}, items)
+
+    let done = false
+    function close() {
+      if (done) return
+      done = true
+      dom.removeChild(menuDOM)
+      return true
+    }
+    dom.appendChild(menuDOM)
+    return {close, node: menuDOM}
+  }
+}
+
+function renderBorderTableItems(items, view) {
+  let rendered = [], updates = []
+  for (let i = 0; i < items.length; i++) {
+    let {dom, update} = items[i].render(view)
+    rendered.push(crel("div", {class: prefix + "-border-table-item"}, dom))
+    updates.push(update)
+  }
+  return {dom: rendered, update: combineUpdates(updates, rendered)}
+}
+
+
 // :: (EditorView, [union<MenuElement, [MenuElement]>]) → {dom: ?dom.DocumentFragment, update: (EditorState) → bool}
 // Render the given, possibly nested, array of menu elements into a
 // document fragment, placing separators between them (and ensuring no

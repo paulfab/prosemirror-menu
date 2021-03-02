@@ -1,4 +1,4 @@
-export {MenuItem, Dropdown, DropdownSubmenu, renderGrouped, icons, joinUpItem, liftItem, selectParentNodeItem,
+export {MenuItem, Dropdown, DropdownSubmenu, renderGrouped, icons, joinUpItem, liftItem, selectParentNodeItem,BorderTable,
         undoItem, redoItem, wrapItem, blockTypeItem} from "./menu"
 export {menuBar} from "./menubar"
 
